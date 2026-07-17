@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MEGA LINKS Secret Generator</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: #0d1117; color: #c9d1d9; min-height: 100vh;
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+  .container { max-width: 780px; width: 100%; }
+  .card {
+    background: #161b22; border: 1px solid #30363d; border-radius: 12px;
+    padding: 32px; margin-bottom: 16px;
+  }
+  h1 {
+    font-size: 24px; font-weight: 700; margin-bottom: 4px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  h1 span { background: #1f6feb; font-size: 12px; padding: 2px 8px; border-radius: 999px; font-weight: 500; }
+  .subtitle { color: #8b949e; font-size: 14px; margin-bottom: 24px; }
+
+  .section-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .section-title .badge { background: #21262d; font-size: 11px; padding: 1px 7px; border-radius: 999px; color: #8b949e; font-weight: 400; }
+
+  label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px; color: #c9d1d9; }
+  input, textarea {
+    width: 100%; padding: 8px 12px; background: #0d1117; border: 1px solid #30363d;
+    border-radius: 6px; color: #c9d1d9; font-size: 14px; font-family: inherit;
+    transition: border-color .2s;
+  }
+  input:focus, textarea:focus { outline: none; border-color: #1f6feb; }
+  textarea { resize: vertical; min-height: 100px; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; font-size: 13px; }
+  .form-row { margin-bottom: 12px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px;
+    border: 1px solid #30363d; border-radius: 6px; font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: all .2s; background: #21262d; color: #c9d1d9;
+  }
+  .btn:hover { background: #30363d; border-color: #8b949e; }
+  .btn-primary { background: #238636; border-color: #2ea043; color: #fff; }
+  .btn-primary:hover { background: #2ea043; }
+  .btn-danger { background: #da3633; border-color: #f85149; color: #fff; }
+  .btn-danger:hover { background: #f85149; }
+  .btn-copy {
+    background: transparent; border: 1px solid #30363d; color: #8b949e;
+    padding: 4px 12px; font-size: 12px; border-radius: 6px; cursor: pointer; transition: all .2s;
+  }
+  .btn-copy:hover { background: #21262d; color: #c9d1d9; border-color: #8b949e; }
+  .btn-sm { padding: 4px 12px; font-size: 12px; }
+
+  .folder-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #0d1117; border: 1px solid #30363d; border-radius: 8px;
+    padding: 10px 14px; margin-bottom: 6px;
+  }
+  .folder-item .info { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+  .folder-item .info .name { color: #c9d1d9; }
+  .folder-item .info .count { color: #8b949e; font-size: 12px; background: #21262d; padding: 1px 8px; border-radius: 999px; }
+  .empty-msg { color: #8b949e; font-size: 13px; text-align: center; padding: 16px 0; }
+
+  .output-box {
+    background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 14px;
+    margin-top: 8px; position: relative;
+  }
+  .output-box pre {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 12px; line-height: 1.5; color: #7ee787; white-space: pre-wrap; word-break: break-all;
+    max-height: 200px; overflow: auto; margin: 0; padding-right: 60px;
+  }
+  .output-box .top-right {
+    position: absolute; top: 10px; right: 10px; display: flex; gap: 4px;
+  }
+  .output-box .label {
+    font-size: 11px; color: #8b949e; font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .5px;
+  }
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #238636; color: #fff; padding: 10px 24px; border-radius: 8px;
+    font-size: 14px; font-weight: 500; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 999;
+  }
+  .toast.show { opacity: 1; }
+  .toast.error { background: #da3633; }
+
+  .guide-box {
+    background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 16px 20px; margin-bottom: 20px;
+  }
+  .guide-box summary { cursor: pointer; font-weight: 600; font-size: 14px; color: #c9d1d9; padding: 4px 0; }
+  .guide-box summary:hover { color: #58a6ff; }
+  .guide-steps { margin-top: 12px; }
+  .guide-step { display: flex; gap: 10px; margin-bottom: 10px; font-size: 13px; line-height: 1.5; }
+  .guide-step .num {
+    flex-shrink: 0; width: 22px; height: 22px; background: #21262d; border-radius: 999px;
+    display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #58a6ff; margin-top: 1px;
+  }
+  .guide-step .text { color: #c9d1d9; }
+  .guide-step .text .hi { color: #8b949e; display: block; font-size: 12px; margin-top: 1px; }
+  .guide-step .text strong { color: #58a6ff; }
+  .divider { border: none; border-top: 1px solid #21262d; margin: 20px 0; }
+  .error-text { color: #f85149; font-size: 12px; margin-top: 4px; display: none; }
+  .success-text { color: #3fb950; font-size: 12px; margin-top: 4px; display: none; }
+  hr { border: none; border-top: 1px solid #21262d; margin: 16px 0; }
+  @media (max-width: 600px) { .card { padding: 20px; } }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="card">
+    <h1>📁 MEGA LINKS Secret Generator</h1>
+    <p class="subtitle">GitHub Actions workflow ke liye MEGA_LINKS secret JSON banayein. Ek click mein copy karein.</p>
+
+    <details class="guide-box" open>
+      <summary>📖 User Guide — Step by Step</summary>
+      <div class="guide-steps">
+        <div class="guide-step">
+          <span class="num">1</span>
+          <div class="text">
+            Folder name daalein (e.g. <strong>Movies</strong>)
+            <span class="hi">Enter the folder name — yehi GDrive mein folder banega</span>
+          </div>
+        </div>
+        <div class="guide-step">
+          <span class="num">2</span>
+          <div class="text">
+            MEGA links paste karein — <strong>har line par ek link</strong>
+            <span class="hi">Paste each MEGA file URL on a separate line</span>
+          </div>
+        </div>
+        <div class="guide-step">
+          <span class="num">3</span>
+          <div class="text">
+            <strong>"+ Add Folder"</strong> button click karein — folder list mein add ho jayega
+            <span class="hi">Click to add the folder to the list</span>
+          </div>
+        </div>
+        <div class="guide-step">
+          <span class="num">4</span>
+          <div class="text">
+            Saare folders isi tarah add karein (jitne chahein)
+            <span class="hi">Repeat for all folders you want to include</span>
+          </div>
+        </div>
+        <div class="guide-step">
+          <span class="num">5</span>
+          <div class="text">
+            <strong>"🚀 Generate Secret"</strong> click karein — minified JSON ban jayega
+            <span class="hi">Click to generate the single-line JSON secret</span>
+          </div>
+        </div>
+        <div class="guide-step">
+          <span class="num">6</span>
+          <div class="text">
+            <strong>📋 Copy</strong> karo → GitHub repo → Settings → Secrets and variables → <strong>MEGA_LINKS</strong> mein paste karo
+            <span class="hi">Copy the output and paste it as a GitHub Actions secret</span>
+          </div>
+        </div>
+        <div class="guide-step">
+          <span class="num">7</span>
+          <div class="text">
+            <strong>🔄 Reset State</strong> — upar Reset State section se <code>{"folders": {}}</code> copy karo, <code>completed_links.json</code> mein paste karo
+            <span class="hi">Copy the reset JSON from the Reset State section above to clear transfer progress</span>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <hr />
+
+    <div class="section-title"><span>🔄 Reset State</span></div>
+    <p style="font-size:13px; color:#8b949e; margin-bottom:6px;">
+      <code>completed_links.json</code> reset karne ke liye yeh copy karo aur repo mein paste karo.
+    </p>
+    <div class="output-box">
+      <div class="top-right">
+        <button class="btn-copy" onclick="copyOutput('resetOutput')">📋 Copy</button>
+      </div>
+      <pre id="resetOutput">{"folders": {}}</pre>
+    </div>
+    <p style="font-size:12px; color:#8b949e; margin-top:6px;">
+      💡 GitHub repo mein <code>completed_links.json</code> open karo → Edit (pencil icon) → saara content replace karo with above → Commit.
+    </p>
+
+    <hr />
+
+    <div class="section-title">
+      <span>➕ Add a Folder</span>
+    </div>
+
+    <div class="form-row">
+      <label for="folderName">Folder Name</label>
+      <input type="text" id="folderName" placeholder='e.g. "Movies"' />
+    </div>
+    <div class="form-row">
+      <label for="links">MEGA Links <span style="color:#8b949e;font-weight:400;">(one URL per line)</span></label>
+      <textarea id="links" placeholder="https://mega.nz/file/abc123#key1&#10;https://mega.nz/file/def456#key2&#10;https://mega.nz/file/ghi789#key3"></textarea>
+      <div class="error-text" id="folderError"></div>
+      <div class="success-text" id="folderSuccess"></div>
+    </div>
+
+    <button class="btn btn-primary" onclick="addFolder()">➕ Add Folder</button>
+
+    <hr />
+
+    <div class="section-title">
+      <span>📂 Added Folders</span>
+      <span class="badge" id="folderCount">0</span>
+    </div>
+    <div id="folderList">
+      <div class="empty-msg">No folders added yet. Add your first folder above.</div>
+    </div>
+
+    <button class="btn btn-primary" onclick="generateSecret()" style="margin-top:12px;">🚀 Generate Secret</button>
+
+    <div id="outputSection" style="display:none; margin-top: 16px;">
+      <hr />
+      <div class="section-title"><span>🔑 MEGA_LINKS — Copy this</span></div>
+      <div class="output-box">
+        <div class="top-right">
+          <button class="btn-copy" onclick="copyOutput('secretOutput')">📋 Copy</button>
+          <button class="btn-copy" onclick="downloadJson()">⬇ .json</button>
+        </div>
+        <pre id="secretOutput"></pre>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="text-align:center; font-size:12px; color:#8b949e; padding:12px 0;">
+    Made for <a href="https://github.com/shivamjislt97/MEGA-TO-GDRIVE-GITHUB-CRON" style="color:#58a6ff;text-decoration:none;">MEGA-TO-GDRIVE-GITHUB-CRON</a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const folders = {};
+
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '') + ' show';
+  clearTimeout(t._hide);
+  t._hide = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function updateFolderList() {
+  const list = document.getElementById('folderList');
+  const keys = Object.keys(folders);
+  document.getElementById('folderCount').textContent = keys.length;
+
+  if (keys.length === 0) {
+    list.innerHTML = '<div class="empty-msg">No folders added yet.</div>';
+    return;
+  }
+
+  list.innerHTML = keys.map((name, i) => {
+    const count = folders[name].length;
+    return `<div class="folder-item">
+      <div class="info">
+        <span>📁</span>
+        <span class="name">${escHtml(name)}</span>
+        <span class="count">${count} link${count !== 1 ? 's' : ''}</span>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="removeFolder(${i})">🗑 Remove</button>
+    </div>`;
+  }).join('');
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function addFolder() {
+  const nameEl = document.getElementById('folderName');
+  const linksEl = document.getElementById('links');
+  const errEl = document.getElementById('folderError');
+  const successEl = document.getElementById('folderSuccess');
+
+  errEl.style.display = 'none';
+  successEl.style.display = 'none';
+
+  const name = nameEl.value.trim();
+  if (!name) {
+    errEl.textContent = '❌ Please enter a folder name.';
+    errEl.style.display = 'block';
+    nameEl.focus();
+    return;
+  }
+
+  const raw = linksEl.value.trim();
+  if (!raw) {
+    errEl.textContent = '❌ Please paste at least one MEGA link.';
+    errEl.style.display = 'block';
+    linksEl.focus();
+    return;
+  }
+
+  const lines = raw.split('\n').map(l => l.trim()).filter(l => l);
+  const valid = [];
+  const invalid = [];
+
+  for (const line of lines) {
+    if (/^https:\/\/mega\.nz\/(file|folder|#)/.test(line)) {
+      valid.push(line);
+    } else {
+      invalid.push(line);
+    }
+  }
+
+  if (valid.length === 0) {
+    errEl.textContent = '❌ No valid MEGA links found. Links must start with https://mega.nz/file/ or https://mega.nz/#';
+    errEl.style.display = 'block';
+    linksEl.focus();
+    return;
+  }
+
+  if (invalid.length > 0) {
+    errEl.textContent = `⚠ ${invalid.length} invalid line${invalid.length > 1 ? 's' : ''} skipped. Only valid mega.nz URLs kept.`;
+    errEl.style.display = 'block';
+  }
+
+  folders[name] = valid;
+  updateFolderList();
+
+  nameEl.value = '';
+  linksEl.value = '';
+  successEl.textContent = `✅ "${name}" added with ${valid.length} link${valid.length !== 1 ? 's' : ''}!`;
+  successEl.style.display = 'block';
+  document.getElementById('outputSection').style.display = 'none';
+}
+
+function removeFolder(index) {
+  const keys = Object.keys(folders);
+  const name = keys[index];
+  delete folders[name];
+  updateFolderList();
+  document.getElementById('outputSection').style.display = 'none';
+}
+
+function generateSecret() {
+  const keys = Object.keys(folders);
+  if (keys.length === 0) {
+    showToast('❌ Please add at least one folder first.', true);
+    return;
+  }
+
+  const out = {};
+  for (const key of keys) {
+    out[key] = folders[key];
+  }
+  const json = JSON.stringify(out);
+  const pretty = JSON.stringify(out, null, 2);
+
+  document.getElementById('secretOutput').textContent = json;
+  document.getElementById('outputSection').style.display = 'block';
+  document.getElementById('resetOutput').textContent = '{"folders": {}}';
+
+  document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  showToast(`✅ Secret generated with ${keys.length} folder${keys.length > 1 ? 's' : ''}!`);
+}
+
+function copyOutput(elementId) {
+  const el = document.getElementById(elementId);
+  const text = el.textContent;
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('📋 Copied to clipboard!');
+    }).catch(() => {
+      fallbackCopy(text);
+    });
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  showToast('📋 Copied to clipboard!');
+}
+
+function downloadJson() {
+  const text = document.getElementById('secretOutput').textContent;
+  if (!text) {
+    showToast('❌ Nothing to download. Generate a secret first.', true);
+    return;
+  }
+  const blob = new Blob([text], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'MEGA_LINKS.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+</script>
+</body>
+</html>
